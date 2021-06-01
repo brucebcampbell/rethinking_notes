@@ -1,0 +1,68 @@
+---
+title: "Rethinking Slides"
+author: "Bruce Campbell"
+date:
+output:
+  revealjs::revealjs_presentation:
+    incremental: true
+    theme: solarized
+    highlight: zenburn
+    center: true
+    transition: fade
+    self_contained: false
+    reveal_plugins: ["notes", "chalkboard"]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Binomial Model Posterior for p given data W, L 
+
+$W \sim Binom(p,N)$ 
+
+$p \sim U(0,1)$
+
+$L= N-W$
+
+$$P(W,L,p)=P(W,L | p) * P(p)= P(p | W, L) * P(W,L) \implies$$
+$$ P(p| W,L) = \frac{P(W,L|p) P(p)}{P(W,L)}$$
+The posterior
+
+## Grid Simulation for Posterior of p
+
+```{r ,size='tiny',echo = FALSE}
+library(ggplot2)
+library(ggthemes)
+p_grid <- seq( from=0 , to=1 , length.out=20 )
+# define prior
+prior <- rep( 1 , 20 )
+#prior <- ifelse( p_grid < 0.5 , 0 , 1 )
+#prior <- exp( -5*abs( p_grid - 0.5 ) )
+
+# compute likelihood at each value in grid
+likelihood <- dbinom( 6 , size=9 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+
+df<- data.frame(p_grid , posterior)
+p<-ggplot2::ggplot(df, aes(p_grid, posterior))+geom_point()
+p<-p + theme_solarized() + scale_colour_solarized("blue")
+print(p)
+  p <- p +  theme(
+      plot.background = element_blank()
+     ,panel.grid.major = element_blank()
+     ,panel.grid.minor = element_blank()
+     ,panel.border = element_blank()
+    ) 
+  p <- p+ theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank()) + 
+      theme(axis.title.y=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank())
+  p<- p + ggtitle("grid simulation of posterior")
+
+```
